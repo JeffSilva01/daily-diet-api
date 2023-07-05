@@ -14,6 +14,12 @@ export async function usersRoutes(app: FastifyInstance) {
 
     const { name, email, password } = createUserBodySchema.parse(request.body)
 
+    const user = await knex('users').where({ email }).select().first()
+
+    if (user) {
+      return replay.status(409).send()
+    }
+
     const password_hash = await hash(password, 6)
 
     await knex('users').insert({
@@ -24,12 +30,5 @@ export async function usersRoutes(app: FastifyInstance) {
     })
 
     return replay.status(201).send()
-  })
-  app.get('/', async () => {
-    const users = await knex('users').select()
-
-    return {
-      users,
-    }
   })
 }
